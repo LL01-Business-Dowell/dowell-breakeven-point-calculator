@@ -177,18 +177,11 @@ const App = () => {
           {/* Input Section */}
           <motion.div variants={itemVariants} className="lg:col-span-2 order-1 lg:order-1">
             <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-6">
-              <div className="flex justify-between items-center mb-4 sm:mb-6">
+              <div className="mb-4 sm:mb-6">
                 <h2 className="text-xl sm:text-2xl font-bold text-gray-800 flex items-center gap-2">
                   <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-[#64CE72]" />
                   Business Parameters
                 </h2>
-                <button
-                  onClick={handleReset}
-                  className="flex items-center gap-2 px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors text-sm font-medium"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                  Reset
-                </button>
               </div>
               
               <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
@@ -202,7 +195,6 @@ const App = () => {
                     value={inputs.totalInvestment}
                     onChange={(e) => handleInputChange('totalInvestment', e.target.value)}
                     className="w-full p-3 sm:p-4 border-2 border-gray-200 rounded-lg focus:border-[#64CE72] focus:outline-none transition-colors text-base sm:text-lg"
-                    placeholder="Enter total investment"
                   />
                 </motion.div>
 
@@ -216,7 +208,6 @@ const App = () => {
                     value={inputs.monthlyFixedExpenses}
                     onChange={(e) => handleInputChange('monthlyFixedExpenses', e.target.value)}
                     className="w-full p-3 sm:p-4 border-2 border-gray-200 rounded-lg focus:border-[#64CE72] focus:outline-none transition-colors text-base sm:text-lg"
-                    placeholder="Enter monthly fixed expenses"
                   />
                 </motion.div>
 
@@ -230,7 +221,6 @@ const App = () => {
                     value={inputs.expectedYears}
                     onChange={(e) => handleInputChange('expectedYears', e.target.value)}
                     className="w-full p-3 sm:p-4 border-2 border-gray-200 rounded-lg focus:border-[#64CE72] focus:outline-none transition-colors text-base sm:text-lg"
-                    placeholder="Enter expected years"
                   />
                 </motion.div>
 
@@ -248,7 +238,6 @@ const App = () => {
                         ? 'border-red-500 focus:border-red-500' 
                         : 'border-gray-200 focus:border-[#64CE72]'
                     }`}
-                    placeholder="Enter operating days per year"
                   />
                   {errors.operatingDaysPerYear && (
                     <p className="text-red-500 text-sm mt-1">{errors.operatingDaysPerYear}</p>
@@ -265,7 +254,6 @@ const App = () => {
                     value={inputs.directExpensesPerDay}
                     onChange={(e) => handleInputChange('directExpensesPerDay', e.target.value)}
                     className="w-full p-3 sm:p-4 border-2 border-gray-200 rounded-lg focus:border-[#64CE72] focus:outline-none transition-colors text-base sm:text-lg"
-                    placeholder="Enter direct expenses per day"
                   />
                 </motion.div>
 
@@ -279,12 +267,18 @@ const App = () => {
                     value={inputs.customersPerDay}
                     onChange={(e) => handleInputChange('customersPerDay', e.target.value)}
                     className="w-full p-3 sm:p-4 border-2 border-gray-200 rounded-lg focus:border-[#64CE72] focus:outline-none transition-colors text-base sm:text-lg"
-                    placeholder="Enter customers per day"
                   />
                 </motion.div>
               </div>
               
-              <div className="mt-6 flex justify-center">
+              <div className="mt-6 flex justify-center gap-4">
+                <button
+                  onClick={handleReset}
+                  className="flex items-center gap-2 px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors font-bold text-lg"
+                >
+                  <RotateCcw className="w-5 h-5" />
+                  Reset
+                </button>
                 <button
                   onClick={calculateResults}
                   className="bg-[#64CE72] hover:bg-green-600 text-white font-bold py-3 px-8 rounded-lg transition-colors flex items-center gap-2 text-lg"
