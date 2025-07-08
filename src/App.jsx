@@ -1,15 +1,16 @@
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Calculator, TrendingUp, DollarSign, Calendar, Users, Target, RotateCcw } from 'lucide-react';
 
 const App = () => {
   const [inputs, setInputs] = useState({
-    totalInvestment: 10000000,
-    monthlyFixedExpenses: 100000,
-    expectedYears: 2,
-    operatingDaysPerYear: 300,
-    directExpensesPerDay: 200000,
-    customersPerDay: 100
+    totalInvestment: '',
+    monthlyFixedExpenses: '',
+    expectedYears: '',
+    operatingDaysPerYear: '',
+    directExpensesPerDay: '',
+    customersPerDay: ''
   });
 
   const [results, setResults] = useState({
@@ -18,7 +19,9 @@ const App = () => {
     targetedSaleValuePerCustomer: 0
   });
 
-  const [currency, setCurrency] = useState('INR');
+  const [errors, setErrors] = useState({});
+
+  const [currency, setCurrency] = useState('USD');
 
   const currencies = [
     { code: 'INR', name: 'Indian Rupee', symbol: '₹' },
@@ -30,46 +33,76 @@ const App = () => {
     { code: 'AUD', name: 'Australian Dollar', symbol: 'A$' }
   ];
 
-  // Calculate results whenever inputs change
-  useEffect(() => {
-    const calculateResults = () => {
-      const { totalInvestment, monthlyFixedExpenses, expectedYears, operatingDaysPerYear, directExpensesPerDay, customersPerDay } = inputs;
-      
-      // Daily return needed = (Total Investment + (Monthly Fixed Expenses * Expected Years * 12)) / (Operating Days * Expected Years)
-      const dailyReturnNeeded = (totalInvestment + (monthlyFixedExpenses * expectedYears * 12)) / (operatingDaysPerYear * expectedYears);
-      
-      // Targeted sale value per day = Direct expenses per day + Daily return needed
-      const targetedSaleValuePerDay = directExpensesPerDay + dailyReturnNeeded;
-      
-      // Targeted sale value per customer = Targeted sale value per day / Customers per day
-      const targetedSaleValuePerCustomer = targetedSaleValuePerDay / customersPerDay;
-
+  const calculateResults = () => {
+    const { totalInvestment, monthlyFixedExpenses, expectedYears, operatingDaysPerYear, directExpensesPerDay, customersPerDay } = inputs;
+    
+    // Convert string inputs to numbers
+    const totalInv = parseFloat(totalInvestment) || 0;
+    const monthlyExp = parseFloat(monthlyFixedExpenses) || 0;
+    const years = parseFloat(expectedYears) || 0;
+    const opDays = parseFloat(operatingDaysPerYear) || 0;
+    const directExp = parseFloat(directExpensesPerDay) || 0;
+    const customers = parseFloat(customersPerDay) || 0;
+    
+    // Check if all values are valid
+    if (totalInv <= 0 || monthlyExp <= 0 || years <= 0 || opDays <= 0 || directExp <= 0 || customers <= 0) {
       setResults({
-        dailyReturnNeeded,
-        targetedSaleValuePerDay,
-        targetedSaleValuePerCustomer
+        dailyReturnNeeded: 0,
+        targetedSaleValuePerDay: 0,
+        targetedSaleValuePerCustomer: 0
       });
-    };
+      return;
+    }
+    
+    // Daily return needed = (Total Investment + (Monthly Fixed Expenses * Expected Years * 12)) / (Operating Days * Expected Years)
+    const dailyReturnNeeded = (totalInv + (monthlyExp * years * 12)) / (opDays * years);
+    
+    // Targeted sale value per day = Direct expenses per day + Daily return needed
+    const targetedSaleValuePerDay = directExp + dailyReturnNeeded;
+    
+    // Targeted sale value per customer = Targeted sale value per day / Customers per day
+    const targetedSaleValuePerCustomer = targetedSaleValuePerDay / customers;
 
-    calculateResults();
-  }, [inputs]);
+    setResults({
+      dailyReturnNeeded,
+      targetedSaleValuePerDay,
+      targetedSaleValuePerCustomer
+    });
+  };
 
   const handleInputChange = (field, value) => {
+    // Allow decimal numbers and empty string
+    const numericValue = value.replace(/[^0-9.]/g, '');
+    
+    // Clear existing error for this field
+    setErrors(prev => ({ ...prev, [field]: '' }));
+    
+    // Validate Operating Days per Year doesn't exceed 365
+    if (field === 'operatingDaysPerYear' && numericValue && parseFloat(numericValue) > 365) {
+      setErrors(prev => ({ ...prev, [field]: 'Operating days cannot exceed 365 days per year' }));
+    }
+    
     setInputs(prev => ({
       ...prev,
-      [field]: parseFloat(value) || 0
+      [field]: numericValue
     }));
   };
 
   const handleReset = () => {
     setInputs({
-      totalInvestment: 0,
-      monthlyFixedExpenses: 0,
-      expectedYears: 0,
-      operatingDaysPerYear: 0,
-      directExpensesPerDay: 0,
-      customersPerDay: 0
+      totalInvestment: '',
+      monthlyFixedExpenses: '',
+      expectedYears: '',
+      operatingDaysPerYear: '',
+      directExpensesPerDay: '',
+      customersPerDay: ''
     });
+    setResults({
+      dailyReturnNeeded: 0,
+      targetedSaleValuePerDay: 0,
+      targetedSaleValuePerCustomer: 0
+    });
+    setErrors({});
   };
 
   const formatCurrency = (amount) => {
@@ -165,11 +198,11 @@ const App = () => {
                     Total Investment ({currency})
                   </label>
                   <input
-                    type="number"
+                    type="text"
                     value={inputs.totalInvestment}
                     onChange={(e) => handleInputChange('totalInvestment', e.target.value)}
                     className="w-full p-3 sm:p-4 border-2 border-gray-200 rounded-lg focus:border-[#64CE72] focus:outline-none transition-colors text-base sm:text-lg"
-                    placeholder="10,000,000"
+                    placeholder="Enter total investment"
                   />
                 </motion.div>
 
@@ -179,11 +212,11 @@ const App = () => {
                     Monthly Fixed Expenses ({currency})
                   </label>
                   <input
-                    type="number"
+                    type="text"
                     value={inputs.monthlyFixedExpenses}
                     onChange={(e) => handleInputChange('monthlyFixedExpenses', e.target.value)}
                     className="w-full p-3 sm:p-4 border-2 border-gray-200 rounded-lg focus:border-[#64CE72] focus:outline-none transition-colors text-base sm:text-lg"
-                    placeholder="100,000"
+                    placeholder="Enter monthly fixed expenses"
                   />
                 </motion.div>
 
@@ -193,11 +226,11 @@ const App = () => {
                     Expected Years for ROI
                   </label>
                   <input
-                    type="number"
+                    type="text"
                     value={inputs.expectedYears}
                     onChange={(e) => handleInputChange('expectedYears', e.target.value)}
                     className="w-full p-3 sm:p-4 border-2 border-gray-200 rounded-lg focus:border-[#64CE72] focus:outline-none transition-colors text-base sm:text-lg"
-                    placeholder="2"
+                    placeholder="Enter expected years"
                   />
                 </motion.div>
 
@@ -207,12 +240,19 @@ const App = () => {
                     Operating Days per Year
                   </label>
                   <input
-                    type="number"
+                    type="text"
                     value={inputs.operatingDaysPerYear}
                     onChange={(e) => handleInputChange('operatingDaysPerYear', e.target.value)}
-                    className="w-full p-3 sm:p-4 border-2 border-gray-200 rounded-lg focus:border-[#64CE72] focus:outline-none transition-colors text-base sm:text-lg"
-                    placeholder="300"
+                    className={`w-full p-3 sm:p-4 border-2 rounded-lg focus:outline-none transition-colors text-base sm:text-lg ${
+                      errors.operatingDaysPerYear 
+                        ? 'border-red-500 focus:border-red-500' 
+                        : 'border-gray-200 focus:border-[#64CE72]'
+                    }`}
+                    placeholder="Enter operating days per year"
                   />
+                  {errors.operatingDaysPerYear && (
+                    <p className="text-red-500 text-sm mt-1">{errors.operatingDaysPerYear}</p>
+                  )}
                 </motion.div>
 
                 <motion.div variants={itemVariants} className="space-y-2">
@@ -221,11 +261,11 @@ const App = () => {
                     Direct Expenses per Day ({currency})
                   </label>
                   <input
-                    type="number"
+                    type="text"
                     value={inputs.directExpensesPerDay}
                     onChange={(e) => handleInputChange('directExpensesPerDay', e.target.value)}
                     className="w-full p-3 sm:p-4 border-2 border-gray-200 rounded-lg focus:border-[#64CE72] focus:outline-none transition-colors text-base sm:text-lg"
-                    placeholder="200,000"
+                    placeholder="Enter direct expenses per day"
                   />
                 </motion.div>
 
@@ -235,13 +275,23 @@ const App = () => {
                     Customers per Day
                   </label>
                   <input
-                    type="number"
+                    type="text"
                     value={inputs.customersPerDay}
                     onChange={(e) => handleInputChange('customersPerDay', e.target.value)}
                     className="w-full p-3 sm:p-4 border-2 border-gray-200 rounded-lg focus:border-[#64CE72] focus:outline-none transition-colors text-base sm:text-lg"
-                    placeholder="100"
+                    placeholder="Enter customers per day"
                   />
                 </motion.div>
+              </div>
+              
+              <div className="mt-6 flex justify-center">
+                <button
+                  onClick={calculateResults}
+                  className="bg-[#64CE72] hover:bg-green-600 text-white font-bold py-3 px-8 rounded-lg transition-colors flex items-center gap-2 text-lg"
+                >
+                  <Calculator className="w-5 h-5" />
+                  Calculate
+                </button>
               </div>
             </div>
           </motion.div>
@@ -271,25 +321,6 @@ const App = () => {
                   <p className="text-lg sm:text-xl font-bold break-words">{formatCurrency(results.targetedSaleValuePerCustomer)}</p>
                 </motion.div>
 
-                <motion.div 
-                  variants={itemVariants}
-                  className="bg-white/5 backdrop-blur-sm rounded-lg p-3 border border-white/10"
-                >
-                  <div className="text-center">
-                    <p className="text-xs opacity-75 mb-1">Total Investment</p>
-                    <p className="text-base sm:text-lg font-bold break-words">{formatCurrency(inputs.totalInvestment)}</p>
-                  </div>
-                </motion.div>
-
-                <motion.div 
-                  variants={itemVariants}
-                  className="bg-white/5 backdrop-blur-sm rounded-lg p-3 border border-white/10"
-                >
-                  <div className="text-center">
-                    <p className="text-xs opacity-75 mb-1">Payback Period</p>
-                    <p className="text-base sm:text-lg font-bold">{inputs.expectedYears} Years</p>
-                  </div>
-                </motion.div>
               </div>
             </div>
           </motion.div>
